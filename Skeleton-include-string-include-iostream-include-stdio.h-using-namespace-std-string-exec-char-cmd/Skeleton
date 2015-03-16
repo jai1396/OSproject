@@ -9,13 +9,17 @@ string exec(char* cmd)
     FILE* pipe = popen(cmd, "r");
     if (!pipe) return "ERROR";
     
-    
+    //Buffer reads from file
     char buffer[128];
     string result = "";
-    while(!feof(pipe)) {
+    while(!feof(pipe)) 
+    {
+ 	//Result reads from buffer   
     	if(fgets(buffer, 128, pipe) != NULL)
     		result += buffer;
     }
+    
+    //Pipe closed
     pclose(pipe);
     return result;
 }
