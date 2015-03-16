@@ -74,18 +74,15 @@ int main(int argc, char *argv[])
     			double user_time = (usage.ru_utime.tv_sec*1000 + usage.ru_utime.tv_usec/1000);
     			double system_time = (usage.ru_stime.tv_sec*1000 + usage.ru_stime.tv_usec/1000);
 
-			//long page_faults = 0;
-			//long soft_faults = 0;
-			//long invol = 0;
-			//long vol = 0;
+			
 		        printf("Number of Page Faults: %ld \n", usage.ru_majflt -before_usage.ru_majflt);
 			
-			//printf("soft_faults: %lu\n", soft_faults);
+			
 			printf("Number of Page Reclaims: %ld \n", usage.ru_minflt - before_usage.ru_minflt);
 
-			//printf("soft_faults: %lu\n", soft_faults);
+			
 			printf("Number of times preempted involuntarily: %ld \n", usage.ru_nivcsw - before_usage.ru_nivcsw);
-			printf("Number of times preempted Voluntarily: %ld \n", usage.ru_nvcsw - before_usage.ru_nivcsw);
+			printf("Number of times preempted Voluntarily: %ld \n", usage.ru_nvcsw - before_usage.ru_nvcsw);
     			printf("User Time: %f \n", user_time);
     			printf("System Time: %f \n", system_time);
     			printf("Wall-Time: %f \n", (wall_time_passed));
