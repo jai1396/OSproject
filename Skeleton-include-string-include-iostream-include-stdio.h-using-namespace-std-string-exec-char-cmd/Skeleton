@@ -3,27 +3,49 @@
 #include <iostream>
 #include <stdio.h>
 #include <time.h>
-#include <chrono>
+//#include <chrono>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <unistd.h>
 
 using namespace std;
 
 clock_t proc_t;
-auto wall_t1 = chrono::high_resolution_clock::now();
-auto wall_t2 = chrono::high_resolution_clock::now();
+//auto wall_t1 = chrono::high_resolution_clock::now();
+//auto wall_t2 = chrono::high_resolution_clock::now();
+struct rusage begUsage, endUsage;
+//struct timeval start, end;
 
 string exec(char* cmd)
 {
 	//Opens a pipe which allows two processes to communicate
 	
-	proc_t=clock();
-	wall_t1 = chrono::high_resolution_clock::now();
+	//proc_t=clock();
+	//wall_t1 = chrono::high_resolution_clock::now();
+	
+	getrusage(RUSAGE_SELF, &begUsage);
+	//start = usage.ru_stime;
+	
 	FILE* pipe = popen(cmd, "r");
+
+	getrusage(RUSAGE_SELF, &endUsage);	
+	//end = usage.ru_stime;
+	
 
 	char ch;
 	//cin>>ch;	
+	int i, j, k;
+	for (i = 0; i < 100000; i++) 
+	/* Double loop for more interesting results. */
+    		for (j = 0; j < 10000; j++) 
+    			k += 20; 
+    
 	
+	/*
 	proc_t=clock()-proc_t;	
 	wall_t2 = chrono::high_resolution_clock::now();
+	
+	*/
 	
 	if (!pipe) return "ERROR";
 
@@ -50,6 +72,8 @@ string exec(char* cmd)
 int main(int argc, char *argv[])
 {
 	string output;
+	struct timeval start, stop;
+	long softPF, hardPF;
 	double proc_time_taken, wall_time_taken;
 	char input[200]="\0";
 	
@@ -62,9 +86,46 @@ int main(int argc, char *argv[])
 	cout<<endl<<output<<endl;
 	
 	proc_time_taken = ((double)proc_t)/CLOCKS_PER_SEC*1000.0;
-
+	
+	/*
 	cout<<"Processor time: "<<proc_t<<endl;	
 	cout<<"Wall clock time: "<<chrono::duration_cast<std::chrono::milliseconds>(wall_t2-wall_t1).count()<<endl;
-		
+	
+	
+	printf("Started at: %ld.%lds\n", start.tv_sec, start.tv_usec);
+  printf("Ended at: %ld.%lds\n", end.tv_sec, end.tv_usec);
+  */
+	
+	cout<<"\nProcess Statistics\n\n";
+	
+	//For user time
+	start = begUsage.ru_utime;
+	stop = endUsage.ru_utime;
+	cout<<"1. User CPU time:\t\t";
+	//cout<<stop.tv_sec-start.tv_sec<<" seconds\t";
+	//cout<<stop.tv_usec-start.tv_usec<<" useconds\t";
+	
+	cout<<stop.tv_sec<<" seconds\t";
+	cout<<stop.tv_usec<<" useconds\t";	
+	cout<<endl;
+	
+	//For system time
+	start = begUsage.ru_stime;
+	stop = endUsage.ru_stime;
+	cout<<"2. System CPU time:\t\t";
+	//cout<<stop.tv_sec-start.tv_sec<<" seconds\t";
+	//cout<<stop.tv_usec-start.tv_usec<<" useconds\t";
+	
+	cout<<stop.tv_sec<<" seconds\t";
+	cout<<stop.tv_usec<<" useconds\t";
+	cout<<endl;
+	
+	
+	softPF = endUsage.ru_minflt-begUsage.ru_minflt;
+	hardPF = endUsage.ru_majflt-begUsage.ru_majflt;
+	cout<<"3. Page faults:\t\t"<<softPF + hardPF;
+	cout<<endl;
+	
+	cout<<endl;	  		
 	return 0;
 }
