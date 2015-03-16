@@ -2,14 +2,29 @@
 #include <string.h>
 #include <iostream>
 #include <stdio.h>
+#include <time.h>
+#include <chrono>
+
 using namespace std;
+
+clock_t proc_t;
+auto wall_t1 = chrono::high_resolution_clock::now();
+auto wall_t2 = chrono::high_resolution_clock::now();
 
 string exec(char* cmd)
 {
 	//Opens a pipe which allows two processes to communicate
-
+	
+	proc_t=clock();
+	wall_t1 = chrono::high_resolution_clock::now();
 	FILE* pipe = popen(cmd, "r");
 
+	char ch;
+	//cin>>ch;	
+	
+	proc_t=clock()-proc_t;	
+	wall_t2 = chrono::high_resolution_clock::now();
+	
 	if (!pipe) return "ERROR";
 
 	//Buffer reads from file
@@ -35,7 +50,7 @@ string exec(char* cmd)
 int main(int argc, char *argv[])
 {
 	string output;
-
+	double proc_time_taken, wall_time_taken;
 	char input[200]="\0";
 	
 	for(int i=1;i<argc;i++)
@@ -45,6 +60,11 @@ int main(int argc, char *argv[])
 	}
 	output = exec(input);
 	cout<<endl<<output<<endl;
+	
+	proc_time_taken = ((double)proc_t)/CLOCKS_PER_SEC*1000.0;
 
+	cout<<"Processor time: "<<proc_t<<endl;	
+	cout<<"Wall clock time: "<<chrono::duration_cast<std::chrono::milliseconds>(wall_t2-wall_t1).count()<<endl;
+		
 	return 0;
 }
