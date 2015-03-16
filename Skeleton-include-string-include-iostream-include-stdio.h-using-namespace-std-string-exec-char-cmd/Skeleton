@@ -1,0 +1,32 @@
+#include <string>
+#include <iostream>
+#include <stdio.h>
+using namespace std;
+
+string exec(char* cmd) 
+{
+	//Opens a pipe which allows two processes to communicate
+    FILE* pipe = popen(cmd, "r");
+    if (!pipe) return "ERROR";
+    
+    
+    char buffer[128];
+    string result = "";
+    while(!feof(pipe)) {
+    	if(fgets(buffer, 128, pipe) != NULL)
+    		result += buffer;
+    }
+    pclose(pipe);
+    return result;
+}
+
+int main()
+{
+	char input[30];
+	string output;
+	cout<<"Enter command: ";
+	cin>>input;
+	output = exec(input);
+	cout<<endl<<output<<endl;
+	return 0;
+}
