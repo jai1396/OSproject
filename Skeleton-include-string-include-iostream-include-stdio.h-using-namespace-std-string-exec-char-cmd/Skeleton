@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 		}		
 		else
 		{
-			strncpy(check,token,5);
+			strncpy(check,token,6);
 		
 			if(strcmp(check,"/home")==0)
 			{
