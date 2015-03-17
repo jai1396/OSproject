@@ -50,8 +50,9 @@ int main(int argc, char *argv[])
 	struct timeval start, end;
 
 	string output;
+	char new_dir[200];
 	int run_exec = 1;
-	char input[200]="\0";
+	char input[200]="\0",token[50];
 	
 	for(int i=1;i<argc;i++)
 	{
@@ -59,7 +60,44 @@ int main(int argc, char *argv[])
 		strcat(input," ");
 	}
 	
+	begin:
+	strcpy(token,strtok(input," "));
 	
+	//cout<<token<< endl;
+	
+	if(strcmp(token,"cd")==0)
+	{
+		run_exec=0;
+		strcpy(new_dir,get_current_dir_name());
+		
+		if(strcmp(argv[2],"..")==0)
+		{
+			int len=strlen(new_dir);
+			while(new_dir[len-1]!='/')
+			{
+				len--;
+			}
+			new_dir[len-1]='\0';
+			
+			chdir(new_dir);
+			cout<<get_current_dir_name()<<endl;
+		}		
+		else
+		{	
+			strcat(new_dir,"/");
+			strcat(new_dir,argv[2]);
+		
+			chdir(new_dir);
+			cout<<get_current_dir_name()<<endl;
+		}
+		
+		cout<<"Directory changed\n\nEnter new command: ";
+		cin.getline(input,200,'\n');
+		run_exec=1;
+		goto begin;
+		
+	}
+			
 	if(fork() != 0)
 	{
 		int start_time = gettimeofday(&start, NULL);
@@ -96,7 +134,15 @@ int main(int argc, char *argv[])
 			output = exec(input);
 			cout<<endl<<output<<endl;
 		}
-
+		/*else
+		{
+		
+			cout<<getcwd();
+			if(strcmp(argv[2],"..")==0)
+			{
+			
+			}
+		}*/
 	}
 	
 	return 0;
