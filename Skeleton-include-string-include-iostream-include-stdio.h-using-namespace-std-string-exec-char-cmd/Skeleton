@@ -5,12 +5,35 @@
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
-
 #include <string>
 #include <string.h>
 #include <iostream>
 #include <stdio.h>
 using namespace std;
+
+void displayStats(timeval start, timeval end, rusage usage, rusage before_usage)
+{
+	long softPF, hardPF;
+	double wall_time_passed = (end.tv_sec -start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)/1000;
+	double user_time = (usage.ru_utime.tv_sec*1000 + usage.ru_utime.tv_usec/1000);
+	double system_time = (usage.ru_stime.tv_sec*1000 + usage.ru_stime.tv_usec/1000);
+
+	softPF = usage.ru_minflt-before_usage.ru_minflt;
+	hardPF = usage.ru_majflt-before_usage.ru_majflt;
+	
+        cout<<"\nPROCESS STATISTICS\n\n";
+        
+        printf("User Time: %f \n", user_time);
+ 	printf("System Time: %f \n", system_time);       
+ 	printf("Wall-Time: %f \n", (wall_time_passed));       
+ 	printf("Number of times preempted involuntarily: %ld \n", usage.ru_nivcsw - before_usage.ru_nivcsw);       
+	printf("Number of times preempted Voluntarily: %ld \n", usage.ru_nvcsw - before_usage.ru_nvcsw);      
+        printf("Number of Page Faults: %ld \n", hardPF);
+	printf("Number of Page Reclaims: %ld \n", softPF);
+	
+	cout<<endl;
+}
+
 
 string exec(char* cmd)
 {
@@ -51,6 +74,7 @@ int main(int argc, char *argv[])
 
 	string output;
 	char new_dir[200];
+	char temp1_dir[200], temp2_dir[200];
 	int run_exec = 1;
 	char input[200]="\0",token[50];
 	
@@ -63,12 +87,11 @@ int main(int argc, char *argv[])
 	begin:
 	strcpy(token,strtok(input," "));
 	
-	//cout<<token<< endl;
-	
 	if(strcmp(token,"cd")==0)
 	{
 		run_exec=0;
 		strcpy(new_dir,get_current_dir_name());
+		strcpy(temp1_dir, new_dir);
 		strcpy(token,strtok(NULL," "));
 		
 		
@@ -93,7 +116,13 @@ int main(int argc, char *argv[])
 			cout<<get_current_dir_name()<<endl;
 		}
 		
-		cout<<"Directory changed\n\nEnter new command: ";
+		strcpy(temp2_dir,get_current_dir_name());		
+		if(strcmp(temp1_dir, temp2_dir)==0)
+			cout<<"Directory not changed\n";
+		else
+			cout<<"Directory changed\n";
+		
+		cout<<"\nEnter new command: ";
 		cin.getline(input,200,'\n');
 		run_exec=1;
 		goto begin;
@@ -109,23 +138,9 @@ int main(int argc, char *argv[])
 			getrusage(who, &before_usage);
     			waitpid(-1, &status, 0);
     			int end_time = gettimeofday(&end, NULL);
-    			double wall_time_passed = (end.tv_sec -start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)/1000;
     			getrusage(who, &usage);
-    			double user_time = (usage.ru_utime.tv_sec*1000 + usage.ru_utime.tv_usec/1000);
-    			double system_time = (usage.ru_stime.tv_sec*1000 + usage.ru_stime.tv_usec/1000);
-
-			
-		        printf("Number of Page Faults: %ld \n", usage.ru_majflt -before_usage.ru_majflt);
-			
-			
-			printf("Number of Page Reclaims: %ld \n", usage.ru_minflt - before_usage.ru_minflt);
-
-			
-			printf("Number of times preempted involuntarily: %ld \n", usage.ru_nivcsw - before_usage.ru_nivcsw);
-			printf("Number of times preempted Voluntarily: %ld \n", usage.ru_nvcsw - before_usage.ru_nvcsw);
-    			printf("User Time: %f \n", user_time);
-    			printf("System Time: %f \n", system_time);
-    			printf("Wall-Time: %f \n", (wall_time_passed));
+    			displayStats(start, end, usage, before_usage);
+    			
 		}
 	}
 
@@ -136,15 +151,6 @@ int main(int argc, char *argv[])
 			output = exec(input);
 			cout<<endl<<output<<endl;
 		}
-		/*else
-		{
-		
-			cout<<getcwd();
-			if(strcmp(argv[2],"..")==0)
-			{
-			
-			}
-		}*/
 	}
 	
 	return 0;
