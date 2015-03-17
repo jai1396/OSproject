@@ -114,8 +114,8 @@ int main(int argc, char *argv[])
 		else
 		{
 			strncpy(check,token,6);
-		
-			if(strcmp(check,"/home")==0)
+
+			if( (strcmp(check,"/home")==0) || (strcmp(check,"/home/")==0) )
 			{
 				chdir(token);
 				cout<<get_current_dir_name()<<endl;
