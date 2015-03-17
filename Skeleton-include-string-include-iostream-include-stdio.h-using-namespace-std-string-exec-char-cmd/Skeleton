@@ -69,8 +69,10 @@ int main(int argc, char *argv[])
 	{
 		run_exec=0;
 		strcpy(new_dir,get_current_dir_name());
+		strcpy(token,strtok(NULL," "));
 		
-		if(strcmp(argv[2],"..")==0)
+		
+		if(strcmp(token,"..")==0)
 		{
 			int len=strlen(new_dir);
 			while(new_dir[len-1]!='/')
@@ -85,7 +87,7 @@ int main(int argc, char *argv[])
 		else
 		{	
 			strcat(new_dir,"/");
-			strcat(new_dir,argv[2]);
+			strcat(new_dir,token);
 		
 			chdir(new_dir);
 			cout<<get_current_dir_name()<<endl;
