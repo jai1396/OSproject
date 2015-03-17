@@ -76,19 +76,30 @@ int main(int argc, char *argv[])
 	char new_dir[200];
 	char temp1_dir[200], temp2_dir[200];
 	int run_exec = 1;
-	char input[200]="\0",token[50], check[10];
+	char input[200]="\0",token[50], tempinput[200], check[10];
 	
+	/*
 	for(int i=1;i<argc;i++)
 	{
 		strcat(input,argv[i]);
 		strcat(input," ");
 	}
+	*/
 	
-	begin:
-	strcpy(token,strtok(input," "));
+	//begin:
+	//strcpy(token,strtok(input," "));
 	
-	if(strcmp(token,"cd")==0)
+	//if(strcmp(token,"cd")==0)
+	if(strcmp(argv[1],"cd")==0)
 	{
+		for(int i=1;i<argc;i++)
+		{
+			strcat(input,argv[i]);
+			strcat(input," ");
+		}
+		begin:
+		strcpy(token,strtok(input," "));
+		
 		run_exec=0;
 		strcpy(new_dir,get_current_dir_name());
 		strcpy(temp1_dir, new_dir);
@@ -108,7 +119,8 @@ int main(int argc, char *argv[])
 			cout<<get_current_dir_name()<<endl;
 		}		
 		else
-		{
+		{	
+			/*
 			strncpy(check,token,5);
 		
 			if(strcmp(check,"/home")==0)
@@ -124,6 +136,14 @@ int main(int argc, char *argv[])
 				chdir(new_dir);
 				cout<<get_current_dir_name()<<endl;
 			}
+			*/
+			
+			strcat(new_dir,"/");
+			strcat(new_dir,token);
+		
+			chdir(new_dir);
+			cout<<get_current_dir_name()<<endl;
+			
 		}
 		
 		strcpy(temp2_dir,get_current_dir_name());		
@@ -139,30 +159,37 @@ int main(int argc, char *argv[])
 		
 	}
 	else
-	{			
-		if(fork() != 0)
+	{
+		for(int i=1;i<argc;i++)
 		{
-			int start_time = gettimeofday(&start, NULL);
-		
-			if(run_exec == 1)
-			{
-				getrusage(who, &before_usage);
-	    			waitpid(-1, &status, 0);
-	    			int end_time = gettimeofday(&end, NULL);
-	    			getrusage(who, &usage);
-	    			displayStats(start, end, usage, before_usage);
-	    			
-			}
+			strcat(input,argv[i]);
+			strcat(input," ");
 		}
-
-		else
-		{
-			if(run_exec == 1)
-			{
-				output = exec(input);
-				cout<<endl<<output<<endl;
-			}
-		}	
 	}
+			
+	if(fork() != 0)
+	{
+		int start_time = gettimeofday(&start, NULL);
+		
+		if(run_exec == 1)
+		{
+			getrusage(who, &before_usage);
+    			waitpid(-1, &status, 0);
+    			int end_time = gettimeofday(&end, NULL);
+    			getrusage(who, &usage);
+    			displayStats(start, end, usage, before_usage);
+    			
+		}
+	}
+
+	else
+	{
+		if(run_exec == 1)
+		{
+			output = exec(input);
+			cout<<endl<<output<<endl;
+		}
+	}
+	
 	return 0;
 }
