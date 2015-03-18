@@ -18,7 +18,7 @@
 using namespace std;
 
 enum PIPES {READ, WRITE};
-int run_exec=1;
+
 
 
 
@@ -76,7 +76,7 @@ string exec(char* cmd)
 
 int main(int argc, char *argv[])
 {
-	int status;
+	int status, status1;
 	int who = RUSAGE_CHILDREN;
 	int finalflag=0;
 
@@ -89,7 +89,9 @@ int main(int argc, char *argv[])
 	pipe(hpipe);
 	
 	key_t key;
-	int shm_id;
+	int shm_id, shm_id1;
+	
+	int *run_exec;
 	
 	char ch;
 
@@ -103,6 +105,9 @@ int main(int argc, char *argv[])
 	shm_id = shmget(key, 100*sizeof(char), 0666 | IPC_CREAT);
 	new_dir = (char*)shmat(shm_id, NULL, 0);
 	
+	shm_id1 = shmget(key, sizeof(int), 0666 | IPC_CREAT);
+	run_exec = (int*)shmat(shm_id1, NULL, 0);
+	*run_exec =1;
 	
 	for(int i=1;i<argc;i++)
 	{
@@ -120,32 +125,16 @@ int main(int argc, char *argv[])
 	if(fork() != 0)
 	{
 		
-		cout<<"Test14"<<endl;
-		
 		if(strcmp(token,"cd")==0)
 		{
-			cout<<"Test15"<<endl;
-			
-			run_exec=0;
-			cout<<"Run exec = "<<run_exec<<endl;
-			
-			cout<<"Run exec = "<<run_exec<<endl;
-
+			*run_exec=0;
 			
 			int start_time = gettimeofday(&start, NULL);
-			if(run_exec == 0)
+			if(*run_exec == 0)
 			{
-				cout<<"Test16"<<endl;
-				cout<<"Run exec = "<<run_exec<<endl;
-				
-				cout<<"Test16a"<<endl;
 				strcpy(temp1_dir, get_current_dir_name());
-				cout<<"Test16b"<<endl;
-				
-				
-				
+
 				getrusage(who, &before_usage);
-				cout<<"Test17"<<endl;
 
 	    			waitpid(-1, &status, 0);
 	    			
@@ -164,34 +153,26 @@ int main(int argc, char *argv[])
 	    			}
 	    			
 	    			close (hpipe[READ]);
+	    			
 	    			new_dir[x+1]='\0';
-	    			cout<<"\nNew dir = "<<new_dir<<endl;
 	    			
 	    			chdir(new_dir);
 				
 
-				cout<<"Temp1 = "<<temp1_dir<<endl;
-	    			cout<<"Test18"<<endl;
-	    			int end_time = gettimeofday(&end, NULL);
+				int end_time = gettimeofday(&end, NULL);
 	    			getrusage(who, &usage);
 	    			
-	    			cout<<"Test19"<<endl;
 	    			cout<<get_current_dir_name()<<endl;
 	    			
 	    			displayStats(start, end, usage, before_usage);
-				cout<<"Test20"<<endl;
 				
 				strcpy(temp2_dir,get_current_dir_name());
 				
-				cout<<"Temp1 = "<<temp1_dir<<endl;
-				cout<<"Temp2 = "<<temp2_dir<<endl;
-		
-						
+				
 				if(strcmp(temp1_dir, temp2_dir)==0)
 					cout<<"Directory not changed\n";
 				else
 					cout<<"Directory changed\n";
-				cout<<"Test21"<<endl;
 			}	
 		}
 		else if(strcmp(token,"exit")==0)
@@ -208,108 +189,87 @@ int main(int argc, char *argv[])
 			
 				int start_time = gettimeofday(&start, NULL);
 					
-				cout<<"Test22"<<endl;
-				if(run_exec == 1)
+
+				if(*run_exec == 1)
 				{
 					getrusage(who, &before_usage);
-					cout<<"Test23"<<endl;
-		    			waitpid(sec_pid, &status, 0);
-		    			cout<<"Test24"<<endl;
+
+		    			waitpid(sec_pid, &status1, 0);
+
 		    			int end_time = gettimeofday(&end, NULL);
 		    			getrusage(who, &usage);
 		    			displayStats(start, end, usage, before_usage);
-		    			cout<<"Test25"<<endl;
+
 				}
 			}
 			else
 			{
 				output = exec(input);
 				cout<<endl<<output<<endl;
-				cout<<"Test2"<<endl;
 				return(0);
 			}
 		}
+		cout<<get_current_dir_name()<<endl;
 		cout<<"\nEnter new command: ";
 		cin.getline(input,200,'\n');
-		run_exec=1;
+		*run_exec=1;
 		
-		
-		cout<<"Run exec = "<<run_exec<<endl;
-
-		
-		cout<<"Test26"<<endl;
 		goto begin;
 	}
 
 	else
 	{
-		cout<<"Test1"<<endl;
 		
-		
-		cout<<"Run exec = "<<run_exec<<endl;
-		
-		cout<<"Test3"<<endl;
-		strcpy(new_dir,get_current_dir_name());
-		cout<<"New dir = "<<new_dir<<endl;
-		strcpy(token,strtok(NULL," "));
-	
-		cout<<"Test4"<<endl;
-		if(strcmp(token,"..")==0)
-		{
-			cout<<"Test5"<<endl;
-			int len=strlen(new_dir);
-			while(new_dir[len-1]!='/')
-			{
-				len--;
-			}
-			new_dir[len-1]='\0';
-			cout<<"New dir = "<<new_dir<<endl;
-			cout<<"Test6"<<endl;
-			cout<<"Test7"<<endl;
-			//Pipe from child to parent
-			cout<<new_dir<<endl;
-			close (hpipe[READ]);
-			char y = '\0';
-			cout<<endl<<"input in pipe"<<endl;
-			for(int i=0; new_dir[i]!='\0';i++)
-			{
-				write(hpipe[WRITE], (char*)&new_dir[i], sizeof(char));
-				cout<<new_dir[i];
-			}
-			write(hpipe[WRITE], (char*)&y, sizeof(char));
-			close (hpipe[WRITE]);
-		}		
-		else
-		{
-			cout<<"Test8"<<endl;
-			strncpy(check,token,6);
+			strcpy(new_dir,get_current_dir_name());
 
-			if( (strcmp(check,"/home")==0) || (strcmp(check,"/home/")==0) )
+			strcpy(token,strtok(NULL," "));
+	
+
+			if(strcmp(token,"..")==0)
 			{
-				strcpy(new_dir, token);
-				cout<<"Test9"<<endl;
-				
-			}
+
+				int len=strlen(new_dir);
+				while(new_dir[len-1]!='/')
+				{
+					len--;
+				}
+				new_dir[len-1]='\0';
+
+			
+				//Pipe from child to parent
+
+				close (hpipe[READ]);
+				char y = '\0';
+
+				for(int i=0; new_dir[i]!='\0';i++)
+				{
+					write(hpipe[WRITE], (char*)&new_dir[i], sizeof(char));
+
+				}
+				write(hpipe[WRITE], (char*)&y, sizeof(char));
+				close (hpipe[WRITE]);
+			}		
 			else
 			{
-				strcat(new_dir,"/");
-				strcat(new_dir,token);
-				cout<<"Test10"<<endl;
+
+				strncpy(check,token,6);
+
+				if( (strcmp(check,"/home")==0) || (strcmp(check,"/home/")==0) )
+				{
+					strcpy(new_dir, token);
+
 				
-				cout<<"Test11"<<endl;
+				}
+				else
+				{
+					strcat(new_dir,"/");
+					strcat(new_dir,token);
+				
+				}
 			}
-		}
-		cout<<"Test12"<<endl;
-		cout<<get_current_dir_name()<<endl;
-		cout<<"\nNewdir = "<<new_dir<<endl;
-		chdir(new_dir);
-		cout<<get_current_dir_name()<<endl;
 		
+
 		
-		
-		
-		cout<<endl<<"Test13"<<endl;
-			
 	}	
 	
 	last:
