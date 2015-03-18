@@ -1,0 +1,44 @@
+#include<iostream>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <sys/resource.h>
+#include <sys/time.h>
+#include <sys/mman.h>
+#include <string>
+#include <string.h>
+#include <iostream>
+#include <stdio.h>
+#include <cstring>
+#include <cstdlib>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+using namespace std;
+
+int main(){
+    key_t key;
+    int shm_id;
+char* arr;
+int status;
+key=ftok("~/.bashrc",1);
+
+	    shm_id = shmget(key, 10*sizeof(char), 0666 | IPC_CREAT);
+
+	    arr = (char*)shmat(shm_id, NULL, 0);
+	if(fork()!=0)
+	{
+
+	    waitpid(-1, &status, 0); 
+	    cout<<arr;
+	}
+    	else
+    	{	
+    		strcpy(arr, "one");
+	}
+	
+	return 0;
+}
