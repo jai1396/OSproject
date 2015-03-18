@@ -88,14 +88,21 @@ int main(int argc, char *argv[])
 	int hpipe[2], rpipe[2];
 	pipe(hpipe);
 	
+	key_t key;
+	int shm_id;
+	
 	char ch;
 
 	string output;
 	
 	char input[200]="\0",token[50], check[10],temp[200];
-	char new_dir[200];
+	char *new_dir;
 	char temp1_dir[200], temp2_dir[200];
-
+	
+	key=ftok("~/.bashrc",1);
+	shm_id = shmget(key, 100*sizeof(char), 0666 | IPC_CREAT);
+	new_dir = (char*)shmat(shm_id, NULL, 0);
+	
 	
 	for(int i=1;i<argc;i++)
 	{
@@ -298,20 +305,6 @@ int main(int argc, char *argv[])
 		chdir(new_dir);
 		cout<<get_current_dir_name()<<endl;
 		
-		/*
-		//Pipe from child to parent
-		cout<<new_dir<<endl;
-		close (hpipe[READ]);
-		char y = '\0';
-		cout<<endl<<"input in pipe"<<endl;
-		for(int i=0; new_dir[i]!='\0';i++)
-		{
-			write(hpipe[WRITE], (char*)&new_dir[i], sizeof(char));
-			cout<<new_dir[i];
-		}
-		write(hpipe[WRITE], (char*)&y, sizeof(char));
-		close (hpipe[WRITE]);
-		*/
 		
 		
 		
